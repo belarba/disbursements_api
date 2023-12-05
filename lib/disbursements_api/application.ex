@@ -8,10 +8,13 @@ defmodule DisbursementsApi.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      {Plug.Cowboy,
-      scheme: :http,
-      plug: DisbursementsApi.Router,
-      options: [port: Application.get_env(:rest_api, :port)]}
+      DisbursementsApi.Repo,
+      {
+        Plug.Cowboy,
+        scheme: :http,
+        plug: DisbursementsApi.Router,
+        options: [port: Application.get_env(:disbursements_api, :port)]
+      }
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
