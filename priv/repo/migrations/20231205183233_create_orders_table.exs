@@ -5,7 +5,7 @@ defmodule DisbursementsApi.Repo.Migrations.CreateOrdersTable do
     create table(:orders) do
       add :csv_id, :string
       add :merchant_reference, :string, null: false
-      add :amount, :money, null: false
+      add :amount, :decimal, null: false
 
       timestamps()
     end
