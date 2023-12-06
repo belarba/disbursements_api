@@ -7,9 +7,7 @@ defmodule DisbursementsApi.DisbursementCalculator do
   def calculate_disbursement(merchant_id, disbursement_date) do
     # Fetch merchant and orders for the specified merchant and date
     merchant = Repo.get!(DisbursementsApi.Merchants, merchant_id)
-    IO.puts("em cima")
-    IO.inspect(merchant)
-    orders = fetch_orders_for_disbursement(merchant)
+    orders = fetch_orders_for_disbursement(merchant.merchant_reference , disbursement_date)
 
     # Calculate total commission and apply fees
     total_commission = calculate_total_commission(orders)
@@ -41,14 +39,12 @@ defmodule DisbursementsApi.DisbursementCalculator do
     end
   end
 
-  defp fetch_orders_for_disbursement(merchant) do
+  defp fetch_orders_for_disbursement(merchant_reference, disbursement_date) do
     Repo.all(from o in DisbursementsApi.Orders,
-             where: o.merchant_reference == ^merchant.reference)
+             where: o.merchant_reference == ^merchant_reference and fragment("DATE(?) = DATE(?)", o.csv_created_at, ^disbursement_date))
   end
 
   defp calculate_total_commission(orders) do
-    IO.puts("aqui")
-    IO.inspect(orders)
     Enum.reduce(orders, 0.0, fn order, acc ->
       acc + calculate_order_commission(order)
     end)
@@ -56,10 +52,10 @@ defmodule DisbursementsApi.DisbursementCalculator do
 
   defp calculate_order_commission(order) do
     amount = order.amount
-    cond do
-      amount < 50.0 -> round_up(amount * 0.01, 2)
-      amount >= 50.0 and amount <= 300.0 -> round_up(amount * 0.0095, 2)
-      true -> round_up(amount * 0.0085, 2)
+    case amount do
+      _ when amount < 50.0 -> round_up(amount * 0.01, 2)
+      _ when amount >= 50.0 and amount <= 300.0 -> round_up(amount * 0.0095, 2)
+      _ -> round_up(amount * 0.0085, 2)
     end
   end
 
@@ -100,9 +96,6 @@ defmodule DisbursementsApi.DisbursementCalculator do
   end
 
   defp round_up(number, precision) do
-    IO.puts("aqui")
-    IO.inspect(number)
-    IO.inspect(precision)
-    round(number * (10 ** precision)) / 10 ** precision
+    round(number * 10 ** precision) / 10 ** precision
   end
 end
