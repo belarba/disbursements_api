@@ -8,7 +8,7 @@ defmodule DisbursementsApi.Orders do
     field :csv_id, :string
     field :merchant_reference, :string
     field :amount, :float
-    field :csv_created_at, :string
+    field :csv_created_at, :date
 
     timestamps()
   end
