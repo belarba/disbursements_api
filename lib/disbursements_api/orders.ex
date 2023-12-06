@@ -7,7 +7,7 @@ defmodule DisbursementsApi.Orders do
   schema "orders" do
     field :csv_id, :string
     field :merchant_reference, :string
-    field :amount, :decimal
+    field :amount, :float
 
     timestamps()
   end
@@ -32,11 +32,12 @@ defmodule DisbursementsApi.Orders do
   defp extract_csv_row(_), do: %{}
 
   defp handle_csv_row([csv_row]) do
-    [csv_id, merchant_reference, amount, _date] = String.split(csv_row, ";")
+    [csv_id, merchant_reference, amount, csv_created_at] = String.split(csv_row, ";")
     %{
       "csv_id" => csv_id,
       "merchant_reference" => merchant_reference,
-      "amount" => String.to_float(amount)
+      "amount" => String.to_float(amount),
+      "csv_created_at" => csv_created_at
     }
   end
 

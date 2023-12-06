@@ -26,7 +26,8 @@ defmodule DisbursementsApi.MixProject do
       {:jason, "~> 1.3"},
       {:ecto_sql, "~> 3.0"},
       {:postgrex, ">= 0.0.0"},
-      {:csv, "~> 2.0"}
+      {:csv, "~> 2.0"},
+      {:decimal, "~> 2.0"}
     ]
   end
 end
