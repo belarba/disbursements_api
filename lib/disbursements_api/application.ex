@@ -8,6 +8,7 @@ defmodule DisbursementsApi.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      {DisbursementsApi.Worker, 24 * 60 * 60 * 1000},
       DisbursementsApi.Repo,
       {
         Plug.Cowboy,
