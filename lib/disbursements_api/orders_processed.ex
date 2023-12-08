@@ -5,8 +5,8 @@ defmodule DisbursementsApi.OrdersProcessed do
   schema "orders_processed" do
     field :amount, :float
     field :commission, :float
-    field :disbursement_id, references(:disbursements, on_delete: :nothing)
-    field :order_id, references(:orders, on_delete: :nothing)
+    field :disbursement_id, :integer
+    field :order_id, :integer
 
     timestamps()
   end

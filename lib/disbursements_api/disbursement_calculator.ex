@@ -7,13 +7,10 @@ defmodule DisbursementsApi.DisbursementCalculator do
   def calculate_disbursement(merchant_id, disbursement_date) do
     # Fetch merchant and orders for the specified merchant and date
     merchant = Repo.get!(DisbursementsApi.Merchants, merchant_id)
-    orders = fetch_orders_for_disbursement(merchant.merchant_reference , disbursement_date)
+    orders = fetch_orders_for_disbursement(merchant.reference , disbursement_date)
 
     # Calculate total commission and apply fees
     total_commission = calculate_total_commission(orders)
-    total_from_orders = Enum.reduce(orders, 0.0, fn order, acc ->
-      acc + order.amount
-    end)
     adjusted_commission = apply_fees(total_commission)
 
     # Check if it's the first disbursement of the month
@@ -27,21 +24,32 @@ defmodule DisbursementsApi.DisbursementCalculator do
       total_commission: adjusted_commission,
       disbursement_date: disbursement_date,
       orders: orders,
-      amount: round_up(total_from_orders, 2),
-      fees: round_up(total_commission - adjusted_commission, 2),
       reference: "DISB-#{merchant_id}-#{disbursement_date}"
     }
 
+    IO.puts("aqui está")
+    IO.inspect(disbursement_params)
     # Persist the disbursement record
     case Repo.insert(DisbursementsApi.Disbursement.changeset(%DisbursementsApi.Disbursement{}, disbursement_params)) do
-      {:ok, _disbursement} -> :ok
+      {:ok, disbursement} -> Enum.each(orders, fn order ->
+        Repo.insert(DisbursementsApi.OrdersProcessed.changeset(%DisbursementsApi.OrdersProcessed{}, %{
+          order_id: order.id,
+          disbursement_id: disbursement.id,
+          amount: order.amount,
+          commission: calculate_order_commission(order)
+        })
+        )
+      end)
       {:error, changeset} -> {:error, "Failed to create disbursement: #{inspect(changeset.errors)}"}
     end
   end
 
   defp fetch_orders_for_disbursement(merchant_reference, disbursement_date) do
     Repo.all(from o in DisbursementsApi.Orders,
-             where: o.merchant_reference == ^merchant_reference and fragment("DATE(?) = DATE(?)", o.csv_created_at, ^disbursement_date))
+             join: p in DisbursementsApi.OrdersProcessed, on: o.id == p.order_id,
+             where: o.merchant_reference == ^merchant_reference
+             and fragment("DATE(?) <= DATE(?)", o.csv_created_at, ^disbursement_date)
+             and is_nil(p.disbursement_id))
   end
 
   defp calculate_total_commission(orders) do
