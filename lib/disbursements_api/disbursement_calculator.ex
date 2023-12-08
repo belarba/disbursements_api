@@ -28,34 +28,23 @@ defmodule DisbursementsApi.DisbursementCalculator do
 
     {:ok, disbursement} = Repo.insert(DisbursementsApi.Disbursement.changeset(%DisbursementsApi.Disbursement{}, disbursement_params))
 
-    Enum.each(orders, fn order ->
-          Repo.insert(DisbursementsApi.OrdersProcessed.changeset(%DisbursementsApi.OrdersProcessed{}, %{
-            order_id: order.id,
-            disbursement_id: disbursement.id,
-            amount: order.amount,
-            commission: calculate_order_commission(order)
-          })
-          )
-        end)
+    Enum.each(orders,
+      fn order ->
+        Repo.insert(DisbursementsApi.OrdersProcessed.changeset(%DisbursementsApi.OrdersProcessed{}, %{
+          order_id: order.id,
+          disbursement_id: disbursement.id,
+          amount: order.amount,
+          commission: calculate_order_commission(order)
+        })
+        )
 
-    disbursement
+        DisbursementsApi.Orders.changeset(order, %{processed: true})
+        |> Repo.update()
+      end
+    )
 
-    IO.inspect(disbursement)
-    # Persist the disbursement record
-    # case disbursement do
-    #   _ ->
-    #     IO.puts("veio aqui")
-    #     Enum.each(orders, fn order ->
-    #     Repo.insert(DisbursementsApi.OrdersProcessed.changeset(%DisbursementsApi.OrdersProcessed{}, %{
-    #       order_id: order.id,
-    #       disbursement_id: disbursement.id,
-    #       amount: order.amount,
-    #       commission: calculate_order_commission(order)
-    #     })
-    #     )
-    #   end)
-    #   _ -> {:error, "Failed to create disbursement: "}
-    # end
+    rescue
+      error in Ecto.QueryError -> {:error, to_string(error)}
   end
 
   defp fetch_orders_for_disbursement(merchant_reference, disbursement_date) do
@@ -63,7 +52,8 @@ defmodule DisbursementsApi.DisbursementCalculator do
              left_join: p in DisbursementsApi.OrdersProcessed, on: o.id == p.order_id,
              where: o.merchant_reference == ^merchant_reference
              and fragment("DATE(?) <= DATE(?)", o.csv_created_at, ^disbursement_date)
-             and is_nil(p.disbursement_id))
+             and is_nil(p.disbursement_id)
+             and o.processed == false)
   end
 
   defp calculate_total_commission(orders) do

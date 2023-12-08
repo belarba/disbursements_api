@@ -9,6 +9,7 @@ defmodule DisbursementsApi.Orders do
     field :merchant_reference, :string
     field :amount, :string
     field :csv_created_at, :date
+    field :processed, :boolean, default: false
 
     timestamps()
   end
@@ -16,7 +17,7 @@ defmodule DisbursementsApi.Orders do
   @doc false
   def changeset(order, attrs) do
     order
-    |> cast(attrs, [:csv_id, :merchant_reference, :amount, :csv_created_at])
+    |> cast(attrs, [:csv_id, :merchant_reference, :amount, :csv_created_at, :processed])
     |> validate_required([:csv_id, :merchant_reference, :amount, :csv_created_at])
   end
 
