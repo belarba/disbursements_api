@@ -37,6 +37,8 @@ Step by step:
 2. About process scheduling: My idea was to create a worker that would be called every X amount of time and execute the routine. Although the statement specifies the time that the result needs to be ready, I did not consider this in my solution.
 3. Information processing: I would like to delve deeper into the business rules to create a more interesting database. As well as working more on the processing itself including the issue of the minimum charge amount. I tried to start something but, again, due to the time invested in the exercise I didn't complete it.
 4. Tests: The testing part was quite poor. I needed to add many other scenarios to ensure that all business rules were implemented and working perfectly.
+5. Final numbers: I'm not sure here, but as I run it on 08/12/2023 - a Friday - and considering orders from before it, here is my final result:
+Year: 2023, Disbursements: 50, Amount Disbursed: 137752583.96, Amount Fees: 1240123.28
 
 The end result may not be what I would like, but I found the process very interesting :)
 
