@@ -3,6 +3,26 @@ defmodule DisbursementsApi.DisbursementCalculator do
 
   alias DisbursementsApi.Repo
 
+  def today_disbursements() do
+    daily = Repo.all(from m in DisbursementsApi.Merchants,
+      where: fragment("upper(?)", m.disbursement_frequency) == "DAILY",
+      select: m.id)
+
+    weekly = Repo.all(from m in DisbursementsApi.Merchants,
+      where: fragment("upper(?)", m.disbursement_frequency) == "WEEKLY"
+      and fragment("EXTRACT(DOW FROM ?) = ?", m.live_on, ^Date.day_of_week(Date.utc_today())),
+      select: m.id)
+
+    merchants = daily ++ weekly
+
+    IO.puts("e entao")
+    IO.inspect(merchants)
+
+    Enum.each(merchants, fn merchant ->
+      calculate_disbursement(merchant, DateTime.utc_now())
+    end)
+  end
+
   @spec calculate_disbursement(merchant_id :: integer, disbursement_date :: Date.t) :: :ok | {:error, String.t}
   def calculate_disbursement(merchant_id, disbursement_date) do
     # Fetch merchant and orders for the specified merchant and date
@@ -107,6 +127,8 @@ defmodule DisbursementsApi.DisbursementCalculator do
       where: d.merchant_id == ^merchant_id and fragment("DATE_PART('month', ?) = DATE_PART('month', ?)", d.disbursement_date, ^last_month),
       select: sum(d.total_commission)
     )
+  rescue
+    _ -> 0.0
   end
 
   defp round_up(number, precision) do

@@ -14,7 +14,8 @@ defmodule DisbursementsApi.Application do
         scheme: :http,
         plug: DisbursementsApi.Router,
         options: [port: Application.get_env(:disbursements_api, :port)]
-      }
+      },
+      {DisbursementsApi.Supervisor, []}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
