@@ -22,8 +22,9 @@ defmodule DisbursementsApi.Disbursement do
 
   def summary() do
     query =
-      from d in Disbursement,
-        join: op in OrdersProcessed, on: d.id == op.disbursement_id,
+      from(d in Disbursement,
+        join: op in OrdersProcessed,
+        on: d.id == op.disbursement_id,
         group_by: fragment("DATE_PART('year', ?)", d.disbursement_date),
         select: %{
           year: fragment("DATE_PART('year', ?)", d.disbursement_date),
@@ -31,20 +32,22 @@ defmodule DisbursementsApi.Disbursement do
           amount_disbursed: sum(op.amount),
           amount_fees: sum(op.commission)
         }
+      )
+
+    result_string =
+      query
+      |> Repo.all()
+      |> Enum.reduce("", fn record, acc ->
+        year = round(Map.get(record, :year))
+        number_disbursements = Map.get(record, :number_disbursements)
+        amount_disbursed = Float.round(Map.get(record, :amount_disbursed), 2)
+        amount_fees = Float.round(Map.get(record, :amount_fees), 2)
 
         result_string =
-          query
-          |> Repo.all()
-          |> Enum.reduce("", fn(record, acc) ->
-            year = round(Map.get(record, :year))
-            number_disbursements = Map.get(record, :number_disbursements)
-            amount_disbursed = Float.round(Map.get(record, :amount_disbursed),2)
-            amount_fees = Float.round(Map.get(record, :amount_fees),2)
+          "Year: #{year}, Disbursements: #{number_disbursements}, Amount Disbursed: #{amount_disbursed}, Amount Fees: #{amount_fees}\n"
 
-            result_string = "Year: #{year}, Disbursements: #{number_disbursements}, Amount Disbursed: #{amount_disbursed}, Amount Fees: #{amount_fees}\n"
-
-            acc <> result_string
-          end)
+        acc <> result_string
+      end)
 
     result_string
   end
