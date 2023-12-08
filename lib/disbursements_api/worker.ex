@@ -2,7 +2,7 @@ defmodule DisbursementsApi.Worker do
   use GenServer
 
   @impl false
-  def start_link(arg) do
+  def start_link(_arg) do
     GenServer.start_link(__MODULE__, %{})
   end
 

@@ -26,7 +26,7 @@ defmodule DisbursementsApi.Router do
   end
 
   get "/summary" do
-    send_resp(conn, 200, DisbursementsApi.Summary.summary())
+    send_resp(conn, 200, DisbursementsApi.Disbursement.summary())
   end
 
   # Fallback handler when there was no match

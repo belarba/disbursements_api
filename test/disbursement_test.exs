@@ -1,4 +1,4 @@
-defmodule DisbursementsApi.DisbursementCalculatorTest do
+defmodule DisbursementsApi.DisbursementTest do
   use ExUnit.Case, async: true
 
   import Ecto.Query
