@@ -6,15 +6,21 @@ defmodule DisbursementsApi.MixProject do
       app: :disbursements_api,
       version: "0.1.0",
       elixir: "~> 1.15",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
   end
 
+  # This makes sure your factory and any other modules in test/support are compiled
+  # when in the test environment.
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :ex_machina],
       mod: {DisbursementsApi.Application, []}
     ]
   end
@@ -27,7 +33,7 @@ defmodule DisbursementsApi.MixProject do
       {:ecto_sql, "~> 3.0"},
       {:postgrex, ">= 0.0.0"},
       {:csv, "~> 2.0"},
-      {:decimal, "~> 2.0"}
+      {:ex_machina, "~> 2.7", only: :test}
     ]
   end
 end
