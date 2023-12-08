@@ -7,7 +7,7 @@ defmodule DisbursementsApi.Orders do
   schema "orders" do
     field :csv_id, :string
     field :merchant_reference, :string
-    field :amount, :float
+    field :amount, :string
     field :csv_created_at, :date
 
     timestamps()
@@ -37,7 +37,7 @@ defmodule DisbursementsApi.Orders do
     %{
       "csv_id" => csv_id,
       "merchant_reference" => merchant_reference,
-      "amount" => String.to_float(amount),
+      "amount" => amount,
       "csv_created_at" => csv_created_at
     }
   end

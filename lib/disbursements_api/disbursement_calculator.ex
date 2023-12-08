@@ -23,30 +23,44 @@ defmodule DisbursementsApi.DisbursementCalculator do
       merchant_id: merchant_id,
       total_commission: adjusted_commission,
       disbursement_date: disbursement_date,
-      orders: orders,
       reference: "DISB-#{merchant_id}-#{disbursement_date}"
     }
 
-    IO.puts("aqui está")
-    IO.inspect(disbursement_params)
+    {:ok, disbursement} = Repo.insert(DisbursementsApi.Disbursement.changeset(%DisbursementsApi.Disbursement{}, disbursement_params))
+
+    Enum.each(orders, fn order ->
+          Repo.insert(DisbursementsApi.OrdersProcessed.changeset(%DisbursementsApi.OrdersProcessed{}, %{
+            order_id: order.id,
+            disbursement_id: disbursement.id,
+            amount: order.amount,
+            commission: calculate_order_commission(order)
+          })
+          )
+        end)
+
+    disbursement
+
+    IO.inspect(disbursement)
     # Persist the disbursement record
-    case Repo.insert(DisbursementsApi.Disbursement.changeset(%DisbursementsApi.Disbursement{}, disbursement_params)) do
-      {:ok, disbursement} -> Enum.each(orders, fn order ->
-        Repo.insert(DisbursementsApi.OrdersProcessed.changeset(%DisbursementsApi.OrdersProcessed{}, %{
-          order_id: order.id,
-          disbursement_id: disbursement.id,
-          amount: order.amount,
-          commission: calculate_order_commission(order)
-        })
-        )
-      end)
-      {:error, changeset} -> {:error, "Failed to create disbursement: #{inspect(changeset.errors)}"}
-    end
+    # case disbursement do
+    #   _ ->
+    #     IO.puts("veio aqui")
+    #     Enum.each(orders, fn order ->
+    #     Repo.insert(DisbursementsApi.OrdersProcessed.changeset(%DisbursementsApi.OrdersProcessed{}, %{
+    #       order_id: order.id,
+    #       disbursement_id: disbursement.id,
+    #       amount: order.amount,
+    #       commission: calculate_order_commission(order)
+    #     })
+    #     )
+    #   end)
+    #   _ -> {:error, "Failed to create disbursement: "}
+    # end
   end
 
   defp fetch_orders_for_disbursement(merchant_reference, disbursement_date) do
     Repo.all(from o in DisbursementsApi.Orders,
-             join: p in DisbursementsApi.OrdersProcessed, on: o.id == p.order_id,
+             left_join: p in DisbursementsApi.OrdersProcessed, on: o.id == p.order_id,
              where: o.merchant_reference == ^merchant_reference
              and fragment("DATE(?) <= DATE(?)", o.csv_created_at, ^disbursement_date)
              and is_nil(p.disbursement_id))
@@ -59,7 +73,7 @@ defmodule DisbursementsApi.DisbursementCalculator do
   end
 
   defp calculate_order_commission(order) do
-    amount = order.amount
+    amount = String.to_float(order.amount)
     case amount do
       _ when amount < 50.0 -> round_up(amount * 0.01, 2)
       _ when amount >= 50.0 and amount <= 300.0 -> round_up(amount * 0.0095, 2)

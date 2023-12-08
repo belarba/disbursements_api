@@ -6,7 +6,6 @@ defmodule DisbursementsApi.Disbursement do
     field :merchant_id, :integer
     field :total_commission, :decimal
     field :disbursement_date, :date
-    field :orders, {:array, :map}
     field :reference, :string
 
     timestamps()
@@ -15,7 +14,7 @@ defmodule DisbursementsApi.Disbursement do
   @doc false
   def changeset(order, attrs) do
     order
-    |> cast(attrs, [:merchant_id, :total_commission, :disbursement_date, :orders, :reference])
-    |> validate_required([:merchant_id, :total_commission, :disbursement_date, :orders, :reference])
+    |> cast(attrs, [:merchant_id, :total_commission, :disbursement_date, :reference])
+    |> validate_required([:merchant_id, :total_commission, :disbursement_date, :reference])
   end
 end
