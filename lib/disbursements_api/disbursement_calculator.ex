@@ -43,6 +43,8 @@ defmodule DisbursementsApi.DisbursementCalculator do
       end
     )
 
+    {:ok, disbursement}
+
     rescue
       error in Ecto.QueryError -> {:error, to_string(error)}
   end
