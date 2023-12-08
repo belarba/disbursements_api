@@ -14,7 +14,7 @@ defmodule DisbursementsApiTest.Router do
   # Note: @ is module attribute unary operator
   # https://hexdocs.pm/elixir/main/Kernel.html#@/1
   # https://hexdocs.pm/plug/Plug.html#c:init/1
-  @opts RestApi.Router.init([])
+  @opts DisbursementsApi.Router.init([])
 
 
   # Create a test with the name "return ok"
@@ -24,7 +24,7 @@ defmodule DisbursementsApiTest.Router do
 
     # Then call Plug.call/2 with the connection and options
     # https://hexdocs.pm/plug/Plug.html#c:call/2
-    conn = RestApi.Router.call(conn, @opts)
+    conn = DisbursementsApi.Router.call(conn, @opts)
 
     # Finally we are using the assert/2 function to check for the
     # correctness of the response
