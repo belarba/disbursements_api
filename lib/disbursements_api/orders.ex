@@ -5,11 +5,11 @@ defmodule DisbursementsApi.Orders do
   alias DisbursementsApi.Repo
 
   schema "orders" do
-    field :csv_id, :string
-    field :merchant_reference, :string
-    field :amount, :string
-    field :csv_created_at, :date
-    field :processed, :boolean, default: false
+    field(:csv_id, :string)
+    field(:merchant_reference, :string)
+    field(:amount, :string)
+    field(:csv_created_at, :date)
+    field(:processed, :boolean, default: false)
 
     timestamps()
   end
@@ -24,7 +24,8 @@ defmodule DisbursementsApi.Orders do
   defp parse_csv(file_path) do
     file_path
     |> File.stream!()
-    |> Enum.drop(1)  # Skip the first line
+    # Skip the first line
+    |> Enum.drop(1)
     |> CSV.decode(separator: ";", headers: false)
     |> Enum.map(&extract_csv_row/1)
     |> Enum.map(&handle_csv_row/1)
@@ -35,6 +36,7 @@ defmodule DisbursementsApi.Orders do
 
   defp handle_csv_row([csv_row]) do
     [csv_id, merchant_reference, amount, csv_created_at] = String.split(csv_row, ";")
+
     %{
       "csv_id" => csv_id,
       "merchant_reference" => merchant_reference,
@@ -47,8 +49,10 @@ defmodule DisbursementsApi.Orders do
     csv_data = parse_csv(file_path)
 
     Enum.each(csv_data, fn order_attrs ->
-      changeset = %__MODULE__{}
-                   |> DisbursementsApi.Orders.changeset(order_attrs)
+      changeset =
+        %__MODULE__{}
+        |> DisbursementsApi.Orders.changeset(order_attrs)
+
       Repo.insert(changeset)
     end)
   end

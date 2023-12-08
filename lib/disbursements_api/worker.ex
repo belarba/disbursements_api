@@ -14,7 +14,7 @@ defmodule DisbursementsApi.Worker do
 
   @impl true
   def handle_info(:work, state) do
-    DisbursementsApi.DisbursementCalculator.today_disbursements()
+    DisbursementsApi.Disbursement.today_disbursements()
     {:noreply, state}
   end
 end

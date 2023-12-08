@@ -5,7 +5,7 @@ defmodule DisbursementsApi.OrderFactory do
         %DisbursementsApi.Orders{
           amount: "100",
           merchant_reference: build(:merchant).reference,
-          csv_created_at: DateTime.add(DateTime.utc_now(), -60 * 24 * 60 * 60),
+          csv_created_at: DateTime.add(DateTime.utc_now(), -60 * 24 * 60 * 60)
         }
       end
     end
